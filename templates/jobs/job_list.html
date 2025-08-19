@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Job Openings{% endblock %}
+{% block content %}
+    <h2>Job Openings</h2>
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search by title, description, or location..." value="{{ request.GET.q }}">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+    <div class="list-group">
+        {% for job in jobs %}
+            <a href="{% url 'jobs:job_detail' job.pk %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ job.job_title }}</h5>
+                    <small>{{ job.created_date|date:"F j, Y" }}</small>
+                </div>
+                <p class="mb-1">{{ job.job_description|truncatewords:20 }}</p>
+                <small>Location: {{ job.location }}</small>
+            </a>
+        {% empty %}
+            <p>No job openings found.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{{ job.job_title }}{% endblock %}
+{% block content %}
+    <h2>{{ job.job_title }}</h2>
+    <p><strong>Location:</strong> {{ job.location }}</p>
+    <p><strong>Salary Range:</strong> ${{ job.min_offer }} - ${{ job.max_offer }}</p>
+    <p><strong>Description:</strong></p>
+    <p>{{ job.job_description }}</p>
+
+    {% if user.is_authenticated and user.is_admin %}
+        <h3>Applicants for this Position</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Applied Date</th>
+                    <th>Resume</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for applicant in applicants %}
+                    <tr>
+                        <td>{{ applicant.user.username }}</td>
+                        <td>{{ applicant.applied_date|date:"F j, Y" }}</td>
+                        <td><a href="{{ applicant.resume.url }}" target="_blank">Download Resume</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3">No applicants yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'jobs:job_update' job.pk %}" class="btn btn-warning">Edit Job</a>
+        <a href="{% url 'jobs:job_delete' job.pk %}" class="btn btn-danger">Delete Job</a>
+    {% elif user.is_authenticated and not user.is_admin %}
+        {% if already_applied %}
+            <div class="alert alert-info" role="alert">
+                You have already applied for this position.
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-header">Apply for this Job</div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'jobs:apply_for_job' job.pk %}">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-success">Apply</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-danger" role="alert">
+            You are unauthorized! Please <a href="{% url 'jobs:login' %}">sign in</a> to view this page.
+        </div>
+    {% endif %}
+{% endblock %}
